@@ -7,24 +7,26 @@ public class CheckContact : MonoBehaviour
 
     GameObject speaker;
     ScoreAggregator scoreAggregator;
+    private int audienceNumber;
+    private float loopTime;
 
     void Awake()
     {
         speaker = GameObject.Find("speaker");
         scoreAggregator = GameObject.Find("agg").GetComponent<ScoreAggregator>();
+
         lock (scoreAggregator.myLock)
         {
+            audienceNumber = scoreAggregator.numAudience;
             scoreAggregator.numAudience += 1;
         }
+        loopTime = scoreAggregator.contactScoreLoopTime;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        float score = ScoreContact();
-
-        print(score);
-        Loop();
+        StartCoroutine(Loop());
     }
 
     // Update is called once per frame
@@ -33,7 +35,7 @@ public class CheckContact : MonoBehaviour
 
     }
 
-    float ScoreContact()
+    int ScoreContact()
     {
         // print(gameObject.transform.position);
         // print(speaker.transform.position);
@@ -44,25 +46,18 @@ public class CheckContact : MonoBehaviour
 
         if (dotProd > 0.9)
         {
-            // ObjA is looking mostly towards ObjB
+            return 1;
         }
 
-        return dotProd;
+        return 0;
     }
 
     IEnumerator Loop()
     {
-        /**
         while (true)
         {
-            yield return new WaitForSeconds(1);
-            updateUpdateCountPerSecond = updateCount;
-            updateFixedUpdateCountPerSecond = fixedUpdateCount;
-
-            updateCount = 0;
-            fixedUpdateCount = 0;
+            scoreAggregator.WriteEyeContactScore(audienceNumber, ScoreContact());
+            yield return new WaitForSeconds(loopTime);
         }
-    */
-        yield return new WaitForSeconds(1);
     }
 }
