@@ -13,26 +13,35 @@ public class SpeechToText : MonoBehaviour
     [SerializeField]
     private Text m_Recognitions;
 
+    private string currText;
+
     private DictationRecognizer m_DictationRecognizer;
+
+    private readonly Object myLock = new Object();
 
     void Start()
     {
         m_DictationRecognizer = new DictationRecognizer();
-        m_DictationRecognizer.AutoSilenceTimeoutSeconds = 10;
+        m_DictationRecognizer.AutoSilenceTimeoutSeconds = 100;
+        m_DictationRecognizer.InitialSilenceTimeoutSeconds = 100;
 
         //m_Hypotheses = new Text();
         //m_Recognitions = new Text();
-
+        currText = "";
 
         m_DictationRecognizer.DictationResult += (text, confidence) =>
         {
-            Debug.LogFormat("Dictation result: {0}", text);
+            //Debug.LogFormat("Dictation result: {0}", text);
             // m_Recognitions.text += text + "\n";
+            lock(myLock)
+            {
+                currText += text + "\n";
+            }
         };
 
         m_DictationRecognizer.DictationHypothesis += (text) =>
         {
-            Debug.LogFormat("Dictation hypothesis: {0}", text);
+            //Debug.LogFormat("Dictation hypothesis: {0}", text);
             // m_Hypotheses.text += text;
         };
 
@@ -47,18 +56,30 @@ public class SpeechToText : MonoBehaviour
             Debug.LogErrorFormat("Dictation error: {0}; HResult = {1}.", error, hresult);
         };
 
-        StartCoroutine(Record());
+        m_DictationRecognizer.Start();
+
+        StartCoroutine("CutClips");
     }
 
-    IEnumerator Record()
+    IEnumerator CutClips()
     {
-        m_DictationRecognizer.Start();
-        yield return new WaitForSeconds(5.0f);
-        m_DictationRecognizer.Stop();
+        while (true)
+        {
+            yield return new WaitForSeconds(5.0f);
+            lock(myLock)
+            {
+                string[] splitText = currText.Split(' ');
+                print(splitText.Length);
+                print(currText);
+                currText = "";
+            }
+        }
     }
 
     void Update()
     {
         // m_DictationRecognizer.Start();
-    }
+    }string
+
+    void getMaxSizeClip()
 }
