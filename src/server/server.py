@@ -29,6 +29,7 @@ def get_test():
 
 @app.route('/api/script', methods=['GET'])
 def get_script():
+    global script
     return '\n'.join(script)
 
 
@@ -38,8 +39,11 @@ def upload_script():
     new_script = request.form['script'].encode('ascii', errors='ignore').strip()
     lines = new_script.decode('ascii', errors='ignore').split('\n')
     for line in lines:
-        updated_script.append(lines)
-    script = updated_script
+        updated_script.append(line)
+    if updated_script:
+        global script
+        script = updated_script
+    print(script)
     return "Success"
 
 
