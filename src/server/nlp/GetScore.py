@@ -64,10 +64,16 @@ def inference(x1, x2):
 
     x1 = np.asarray(q1,dtype='float32').reshape((1,16,256))
     x2 = np.asarray(q2,dtype='float32').reshape((1,16,256))
+
     try:
         return predict_score(x1, x2)
     except:
-        return ''
+        return 0
+
+
+def max_score(phrase, script):
+    scores = [inference(phrase, line) for line in script]
+    return max(scores)
 
 
 # if __name__=="__main__":
