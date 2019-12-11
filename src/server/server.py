@@ -20,7 +20,7 @@ def get_score():
     phrase = request.args.get("phrase")
     parsed_phrase = ' '.join(phrase.split('_'))
     score = inference(parsed_phrase, "food is great")
-    return score
+    return str(score)
 
 
 if __name__ == '__main__':
