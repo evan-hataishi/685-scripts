@@ -7,12 +7,27 @@ from gensim.models import Word2Vec
 import sys
 from nltk.tokenize import word_tokenize as wt
 from keras.models import load_model
+from tensorflow import keras
 
-siamese_model = load_model('/app/nlp/my_model_siamese_Lstm_final.h5')
-model1 = Word2Vec.load("/app/nlp/word2vec_256.model.wv.vectors.npy")
+import tensorflow as tf
+
+session = tf.Session()
+keras.backend.set_session(session)
+
+print("Loading Models")
+siamese_model = load_model('nlp/my_model_siamese_Lstm_final.h5')
+model1 = Word2Vec.load("nlp/word2vec_256.model")
+print("Done loading models")
 
 
-def inference(x1,x2):
+def predict_score(x1, x2):
+    with session.as_default():
+        with session.graph.as_default():
+            sim_prob = siamese_model.predict([x1,x2])
+            return sim_prob[0][0]
+
+
+def inference(x1, x2):
     #tokenize and pad
     x1=wt(x1.lower().strip())
     x2=wt(x2.lower().strip())
@@ -49,8 +64,10 @@ def inference(x1,x2):
 
     x1 = np.asarray(q1,dtype='float32').reshape((1,16,256))
     x2 = np.asarray(q2,dtype='float32').reshape((1,16,256))
-    sim_prob = siamese_model.predict([x1,x2])
-    return sim_prob
+    try:
+        return predict_score(x1, x2)
+    except:
+        return ''
 
 
 # if __name__=="__main__":
